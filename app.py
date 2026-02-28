@@ -1219,7 +1219,7 @@ def page_payment():
 
             with qr_col:
                 # Generates a dynamic QR link using Google Charts API
-                upi_url = f"upi://pay?pa=9080599509@naviaxis&pn=Krishnan%20R&am={total_inr}&cu=INR"
+                upi_url = f"upi://pay?pa=9080599509@nyes&pn=Nabi_Interior_Designs&am={total_inr}&cu=INR"
                 qr_api = f"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={upi_url}"
                 st.image(qr_api, caption="Scan to Pay via PhonePe / GPay / Paytm")
 
