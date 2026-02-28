@@ -16,6 +16,9 @@ from database import (
     get_user_designs, get_all_designers, create_booking,
     get_user_bookings, admin_stats, admin_all_users, admin_all_bookings,
 )
+from database import (
+    update_booking_status
+)
 from ai_engine import generate_recommendations, COLOR_PALETTES, BUDGET_ADVICE
 
 # ── Page Config ────────────────────────────────────────────────────────────────
@@ -440,38 +443,57 @@ def toast_warning(msg):
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 def render_header():
-    # Using columns to create a horizontal navigation bar at the top
     col_logo, col_nav = st.columns([1, 4])
     
     with col_logo:
         st.markdown('<h2 style="margin:0; color:#8B5E3C;">🏠 InteriorAI</h2>', unsafe_allow_html=True)
 
     with col_nav:
-        # Define role safely to prevent UnboundLocalError
         is_logged_in = st.session_state.get('logged_in', False)
         user = st.session_state.get('user', {})
         role = user.get('role', 'user') if user else 'user'
 
-        # Create horizontal buttons
         if is_logged_in:
-            cols = st.columns(7)
-            nav_items = [
-                ("📊 Dash", "dashboard"), ("✨ AI Wizard", "design"), 
-                ("📋 Designs", "my_designs"), ("📅 Bookings", "bookings"),
-                ("👨‍🎨 Designers", "designers"), ("💳 Pay", "payment")
-            ]
-            
-            for i, (label, page_key) in enumerate(nav_items):
-                if cols[i].button(label, key=f"head_{page_key}", use_container_width=True):
-                    st.session_state.page = page_key
+            # --- DIFFERENT MENUS FOR ADMIN VS USER ---
+            if role == 'admin':
+                # Admin Menu: Only Management Options
+                cols = st.columns(4)
+                nav_items = [
+                    ("📊 Dashboard", "admin"), 
+                    ("👥 Users", "admin_users"), 
+                    ("📋 Bookings & UTR", "admin_bookings"), 
+                ]
+                # Render Admin Buttons
+                for i, (label, page_key) in enumerate(nav_items):
+                    if cols[i].button(label, key=f"head_{page_key}", use_container_width=True):
+                        st.session_state.page = page_key
+                        st.rerun()
+                # Logout Button for Admin
+                if cols[3].button("🚪 Logout", type="secondary", use_container_width=True):
+                    st.session_state.logged_in = False
+                    st.session_state.user = None
+                    st.session_state.page = "home"
                     st.rerun()
-            
-            if cols[6].button("🚪 Logout", type="secondary", use_container_width=True):
-                st.session_state.logged_in = False
-                st.session_state.page = "home"
-                st.rerun()
+
+            else:
+                # User Menu: Full App Experience
+                cols = st.columns(7)
+                nav_items = [
+                    ("📊 Dash", "dashboard"), ("✨ AI Wizard", "design"), 
+                    ("📋 Designs", "my_designs"), ("📅 Bookings", "bookings"),
+                    ("👨‍🎨 Designers", "designers"), ("💳 Pay", "payment")
+                ]
+                for i, (label, page_key) in enumerate(nav_items):
+                    if cols[i].button(label, key=f"head_{page_key}", use_container_width=True):
+                        st.session_state.page = page_key
+                        st.rerun()
+                if cols[6].button("🚪 Logout", type="secondary", use_container_width=True):
+                    st.session_state.logged_in = False
+                    st.session_state.user = None
+                    st.session_state.page = "home"
+                    st.rerun()
         else:
-            # Guest header buttons
+            # Guest Menu
             cols = st.columns([3, 1, 1, 1])
             if cols[1].button("🏠 Home", use_container_width=True):
                 st.session_state.page = "home"; st.rerun()
@@ -1233,6 +1255,7 @@ def page_admin():
     section_header("📊", "Admin Dashboard")
     stats = admin_stats()
 
+    # Stats Row
     col1, col2, col3, col4 = st.columns(4)
     data = [
         (stats['users'], "Total Users", "👥"),
@@ -1245,55 +1268,30 @@ def page_admin():
             st.markdown(f"""
             <div class="stat-card">
                 <div style="font-size:2rem;margin-bottom:4px;">{icon}</div>
-                <div class="stat-number" style="font-size:{'1.8rem' if len(str(val))>6 else '2.5rem'};">{val}</div>
+                <div class="stat-number">{val}</div>
                 <div class="stat-label">{label}</div>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Charts
-    col_left, col_right = st.columns(2)
-    with col_left:
-        # Simulated bookings over time
-        months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
-        bookings_data = [3, 7, 12, 18, 15, max(stats['bookings'], 8)]
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=months, y=bookings_data,
-            fill='tozeroy',
-            line=dict(color='#8B5E3C', width=3),
-            fillcolor='rgba(139,94,60,0.15)',
-            mode='lines+markers',
-            marker=dict(size=8, color='#8B5E3C'),
-            name='Bookings',
-        ))
-        fig.update_layout(
-            title="Bookings Trend (6 Months)", height=300,
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            yaxis=dict(gridcolor="#F0EAE2"), xaxis=dict(gridcolor="#F0EAE2"),
-            margin=dict(l=10, r=10, t=40, b=10),
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # Admin Specific Quick Actions
+    st.subheader("⚡ Management Actions")
+    ac1, ac2 = st.columns(2)
+    with ac1:
+        st.info("📋 **Verify Payments & Bookings**")
+        if st.button("Go to Booking Manager →", use_container_width=True):
+            st.session_state.page = "admin_bookings"
+            st.rerun()
+            
+    with ac2:
+        st.info("👥 **Manage Registered Users**")
+        if st.button("Go to User Manager →", use_container_width=True):
+            st.session_state.page = "admin_users"
+            st.rerun()
 
-    with col_right:
-        styles_count = {"Modern": 35, "Minimalist": 25, "Classic": 15, "Bohemian": 12, "Others": 13}
-        fig = go.Figure(data=[go.Bar(
-            x=list(styles_count.keys()),
-            y=list(styles_count.values()),
-            marker_color=["#8B5E3C", "#C4956A", "#D4AF7A", "#E8D5B0", "#F0EAE2"],
-            marker_line_color='white',
-            marker_line_width=2,
-        )])
-        fig.update_layout(
-            title="Popular Design Styles",
-            height=300,
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            yaxis=dict(gridcolor="#F0EAE2"),
-            margin=dict(l=10, r=10, t=40, b=10),
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
+    # Keep the charts below if you wish...
+    # (Existing Chart code can remain here)
 
 def page_admin_users():
     section_header("👥", "Manage Users")
@@ -1309,19 +1307,70 @@ def page_admin_users():
 
 
 def page_admin_bookings():
-    section_header("📋", "All Bookings")
+    section_header("📋", "Manage Bookings & Payments")
+    
+    # Fetch all booking data
+    # Note: We need to join with payments table to get transaction IDs. 
+    # For now, we will use the admin_all_bookings view.
     bookings = admin_all_bookings()
-    if bookings:
-        df = pd.DataFrame(bookings)
-        cols_show = ["id", "user_name", "user_email", "designer_name", "service_type",
-                     "booking_date", "time_slot", "amount", "payment_status", "booking_status"]
-        cols_show = [c for c in cols_show if c in df.columns]
-        df = df[cols_show]
-        df["amount"] = df["amount"].apply(lambda x: f"₹{int(x*75):,}" if x else "-")
-        st.dataframe(df, use_container_width=True, hide_index=True)
-    else:
-        st.info("No bookings found.")
+    
+    if not bookings:
+        st.info("No bookings found in the system.")
+        return
 
+    # Convert to DataFrame for easy filtering
+    df = pd.DataFrame(bookings)
+    
+    # Search/Filter
+    search = st.text_input("🔍 Search by UTR, User Name or Email", placeholder="Type to search...")
+    if search:
+        mask = df.astype(str).apply(lambda x: x.str.contains(search, case=False)).any(axis=1)
+        df = df[mask]
+
+    st.markdown(f"**Found {len(df)} bookings**")
+
+    # Display as cards for better management
+    for index, row in df.iterrows():
+        # Define status colors
+        status_color = "#27AE60" if row['booking_status'] == 'Confirmed' else "#E67E22"
+        card_bg = "#F9F9F9" if row['booking_status'] == 'Confirmed' else "#FFF8E1"
+        
+        with st.container():
+            st.markdown(f"""
+            <div style="background:{card_bg};border:1px solid #ddd;border-radius:10px;padding:15px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <h4 style="margin:0;color:#2C1810;">Booking #{row['id']} — {row['user_name']}</h4>
+                        <div style="font-size:0.85rem;color:#666;">Service: {row['service_type']}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:bold;font-size:1.1rem;">₹{int(row['amount']*75):,}</div>
+                        <div style="font-size:0.8rem;color:{status_color};font-weight:bold;">{row['booking_status']}</div>
+                    </div>
+                </div>
+                <hr style="margin:10px 0;border-color:#eee;">
+                <div style="display:flex;justify-content:space-between;font-size:0.9rem;">
+                    <div>📅 <strong>Date:</strong> {row['booking_date']} ({row['time_slot']})</div>
+                    <div>👤 <strong>Designer:</strong> {row['designer_name']}</div>
+                </div>
+                <div style="margin-top:10px;background:white;padding:8px;border-radius:6px;border:1px dashed #bbb;">
+                    💳 <strong>UTR / Transaction ID:</strong> <span style="font-family:monospace;font-size:1rem;">{row.get('transaction_id', 'N/A')}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Action Buttons
+            c1, c2, c3 = st.columns([1, 1, 4])
+            with c1:
+                if row['booking_status'] != 'Confirmed':
+                    if st.button("✅ Verify & Confirm", key=f"conf_{row['id']}", type="primary"):
+                        update_booking_status(row['id'], "Confirmed")
+                        st.rerun()
+            with c2:
+                if row['booking_status'] != 'Rejected':
+                    if st.button("❌ Reject", key=f"rej_{row['id']}"):
+                        update_booking_status(row['id'], "Rejected")
+                        st.rerun()
 
 # ── Router ─────────────────────────────────────────────────────────────────────
 def route():
