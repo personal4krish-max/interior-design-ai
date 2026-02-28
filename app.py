@@ -512,17 +512,17 @@ def render_sidebar():
                 st.rerun()
 
             else:
-            st.markdown("""
-            <div style="text-align:center;padding:10px 0 20px;">
-                <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
-            </div>
-            """, unsafe_allow_html=True)
+                st.markdown("""
+                <div style="text-align:center;padding:10px 0 20px;">
+                    <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
+                </div>
+                """, unsafe_allow_html=True)
 
-            for label, page_key in [("🔐 Login", "login"), ("📝 Register", "register"), ("🏠 Home", "home")]:
-                active = "primary" if st.session_state.page == page_key else "secondary"
-                if st.button(label, use_container_width=True, type=active, key=f"nav_{page_key}"):
-                    st.session_state.page = page_key
-                    st.rerun()
+                for label, page_key in [("🔐 Login", "login"), ("📝 Register", "register"), ("🏠 Home", "home")]:
+                    active = "primary" if st.session_state.page == page_key else "secondary"
+                    if st.button(label, use_container_width=True, type=active, key=f"nav_{page_key}"):
+                        st.session_state.page = page_key
+                        st.rerun()
 
         st.markdown("""
         <div style="margin-top:30px;padding:14px;background:#F0EAE2;border-radius:10px;font-size:0.8rem;color:#5C3317;">
