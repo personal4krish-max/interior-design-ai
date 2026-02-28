@@ -439,91 +439,47 @@ def toast_warning(msg):
 
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
-def render_sidebar():
-    with st.sidebar:
-        st.markdown("""
-        <div class="sidebar-brand">
-            <div class="sidebar-logo">🏠</div>
-            <div class="sidebar-name">InteriorAI Studio</div>
-            <div class="sidebar-tagline">DESIGN • INSPIRE • TRANSFORM</div>
-        </div>
-        <hr style="border-color:#EDE5DC;margin:12px 0;">
-        """, unsafe_allow_html=True)
+def render_header():
+    # Using columns to create a horizontal navigation bar at the top
+    col_logo, col_nav = st.columns([1, 4])
+    
+    with col_logo:
+        st.markdown('<h2 style="margin:0; color:#8B5E3C;">🏠 InteriorAI</h2>', unsafe_allow_html=True)
 
-        if st.session_state.logged_in:
-            user = st.session_state.user
-            role = user.get('role', 'user')
+    with col_nav:
+        # Define role safely to prevent UnboundLocalError
+        is_logged_in = st.session_state.get('logged_in', False)
+        user = st.session_state.get('user', {})
+        role = user.get('role', 'user') if user else 'user'
 
-            st.markdown(f"""
-            <div style="background:linear-gradient(135deg,#F0EAE2,#E8DCC8);border-radius:12px;
-                        padding:14px;margin-bottom:16px;text-align:center;">
-                <div style="font-size:2rem;">{'👑' if role=='admin' else '👤'}</div>
-                <div style="font-weight:600;color:#2C1810;font-size:0.95rem;">{user['name']}</div>
-                <div style="font-size:0.78rem;color:#8B7355;">{user['email']}</div>
-                <div style="margin-top:6px;">
-                    <span style="background:#8B5E3C;color:white;padding:2px 10px;border-radius:20px;font-size:0.7rem;text-transform:uppercase;">
-                        {'Admin' if role=='admin' else 'Member'}
-                    </span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            pages_user = {
-                "🏠 Dashboard": "dashboard",
-                "✨ AI Design Wizard": "design",
-                "📋 My Designs": "my_designs",
-                "📅 My Bookings": "bookings",
-                "👨‍🎨 Find Designers": "designers",
-                "💳 Payment": "payment",
-            }
-            pages_admin = {
-                "📊 Admin Dashboard": "admin",
-                "👥 Manage Users": "admin_users",
-                "📋 All Bookings": "admin_bookings",
-            }
-
-            nav = pages_user.copy()
-            if role == "admin":
-                nav.update(pages_admin)
-
-            for label, page_key in nav.items():
-                active = "primary" if st.session_state.page == page_key else "secondary"
-                if st.button(label, use_container_width=True, type=active, key=f"nav_{page_key}"):
+        # Create horizontal buttons
+        if is_logged_in:
+            cols = st.columns(7)
+            nav_items = [
+                ("📊 Dash", "dashboard"), ("✨ AI Wizard", "design"), 
+                ("📋 Designs", "my_designs"), ("📅 Bookings", "bookings"),
+                ("👨‍🎨 Designers", "designers"), ("💳 Pay", "payment")
+            ]
+            
+            for i, (label, page_key) in enumerate(nav_items):
+                if cols[i].button(label, key=f"head_{page_key}", use_container_width=True):
                     st.session_state.page = page_key
                     st.rerun()
-
-            st.markdown("<hr style='border-color:#EDE5DC;'>", unsafe_allow_html=True)
-            if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+            
+            if cols[6].button("🚪 Logout", type="secondary", use_container_width=True):
                 st.session_state.logged_in = False
-                st.session_state.user = None
                 st.session_state.page = "home"
                 st.rerun()
-
         else:
-            st.markdown("""
-            <div style="text-align:center;padding:10px 0 20px;">
-                <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            for label, page_key in [("🔐 Login", "login"), ("📝 Register", "register"), ("🏠 Home", "home")]:
-                active = "primary" if st.session_state.page == page_key else "secondary"
-                if st.button(label, use_container_width=True, type=active, key=f"nav_{page_key}"):
-                    st.session_state.page = page_key
-                    st.rerun()
-
-        st.markdown("""
-        <div style="margin-top:30px;padding:14px;background:#F0EAE2;border-radius:10px;font-size:0.8rem;color:#5C3317;">
-            <strong>💡 Pro Tip</strong><br>Use our AI Design Wizard to get personalised recommendations in under 2 minutes!
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="app-footer">
-            © 2025 InteriorAI Studio<br>Powered by Streamlit & AI
-        </div>
-        """, unsafe_allow_html=True)
-
+            # Guest header buttons
+            cols = st.columns([3, 1, 1, 1])
+            if cols[1].button("🏠 Home", use_container_width=True):
+                st.session_state.page = "home"; st.rerun()
+            if cols[2].button("🔐 Login", use_container_width=True):
+                st.session_state.page = "login"; st.rerun()
+            if cols[3].button("📝 Register", use_container_width=True, type="primary"):
+                st.session_state.page = "register"; st.rerun()
+    st.markdown("---")
 
 # ── Pages ──────────────────────────────────────────────────────────────────────
 
@@ -1400,15 +1356,9 @@ def page_admin_bookings():
 
 # ── Router ─────────────────────────────────────────────────────────────────────
 def route():
-    # --- EMERGENCY RESET BUTTON (Top Left) ---
-    col_btn, _ = st.columns([1, 15])
-    with col_btn:
-        if st.button("⋮", help="Restore Sidebar / Reset Session"):
-            st.session_state.logged_in = False
-            st.session_state.page = "home"
-            st.rerun()
-
-    render_sidebar()
+    # Call the new header instead of the sidebar
+    render_header()
+    
     page = st.session_state.page
 
     # Auth guard
