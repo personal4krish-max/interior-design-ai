@@ -1165,22 +1165,29 @@ def page_payment():
             </div>
             """, unsafe_allow_html=True)
 
-# UPI & QR SECTION
+# --- QUICKCHART QR SECTION ---
             upi_id = "9080599509@naviaxis"
+            # Format the UPI URL for the QR code
             upi_url = f"upi://pay?pa={upi_id}&pn=Krishnan%20R&am={total_inr}&cu=INR"
-            qr_api = f"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={upi_url}"
+            
+            # This is the QuickChart API URL we used previously
+            qr_api = f"https://quickchart.io/qr?text={upi_url}&size=200"
             
             st.info(f"**UPI ID:** {upi_id}")
-            st.image(qr_api, caption="Scan to Pay")
-            txn_id_input = st.text_input("Transaction ID / UTR Number", placeholder="E.g. 1234567890")
+            st.image(qr_api, caption="Scan to Pay via PhonePe / GPay / Paytm")
+            
+            txn_id_input = st.text_input("Transaction ID / UTR Number", placeholder="Enter the 12-digit number here")
 
             if st.form_submit_button("✅ I have Paid - Confirm Booking", use_container_width=True, type="primary"):
                 if txn_id_input:
+                    # Save to database
                     create_booking(st.session_state.user['id'], designer_id, None, str(booking_date), time_slot, service_type, total_inr/75)
                     st.balloons()
-                    toast_success("Booking Confirmed!")
+                    toast_success("Booking Confirmed! Check 'My Bookings' for details.")
+                    st.session_state.page = "bookings"
+                    st.rerun()
                 else:
-                    st.warning("Please enter Transaction ID.")
+                    st.warning("Please enter your Transaction ID after paying.")
 
 
 def page_bookings():
