@@ -1213,13 +1213,13 @@ def page_payment():
             upi_col, qr_col = st.columns([1, 1])
             
             with upi_col:
-                st.info(f"**UPI ID:** personal4krish@gmail.com") # Updated based on your context
+                st.info(f"**UPI ID:** 9080599509@naviaxis") # Updated based on your context
                 st.warning("Please scan the QR code and complete the payment. Enter the Transaction ID below.")
                 txn_id_input = st.text_input("Transaction ID / UTR Number", placeholder="E.g. 1234567890")
 
             with qr_col:
                 # Generates a dynamic QR link using Google Charts API
-                upi_url = f"upi://pay?pa=personal4krish@gmail.com&pn=Krishnan%20R&am={total_inr}&cu=INR"
+                upi_url = f"upi://pay?pa=9080599509@naviaxis&pn=Krishnan%20R&am={total_inr}&cu=INR"
                 qr_api = f"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={upi_url}"
                 st.image(qr_api, caption="Scan to Pay via PhonePe / GPay / Paytm")
 
