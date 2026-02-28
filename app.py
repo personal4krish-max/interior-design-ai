@@ -467,6 +467,18 @@ def render_sidebar():
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            else:
+            st.markdown("""
+            <div style="text-align:center;padding:10px 0 20px;">
+                <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            for label, page_key in [("🔐 Login", "login"), ("📝 Register", "register"), ("🏠 Home", "home")]:
+                active = "primary" if st.session_state.page == page_key else "secondary"
+                if st.button(label, use_container_width=True, type=active, key=f"nav_{page_key}"):
+                    st.session_state.page = page_key
+                    st.rerun()
 
             pages_user = {
                 "🏠 Dashboard": "dashboard",
