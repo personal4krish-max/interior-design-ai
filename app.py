@@ -1165,60 +1165,22 @@ def page_payment():
             </div>
             """, unsafe_allow_html=True)
 
-            # Payment details
-            st.markdown("**💳 Payment Details**")
-            col_c, col_d = st.columns(2)
-            with col_c:
-                card_number = st.text_input("Card Number", placeholder="1234 5678 9012 3456", max_chars=19)
-                expiry = st.text_input("Expiry Date", placeholder="MM/YY")
-            with col_d:
-                name_on_card = st.text_input("Name on Card", placeholder="John Doe")
-                cvv = st.text_input("CVV", placeholder="123", max_chars=3, type="password")
+# UPI & QR SECTION
+            upi_id = "9080599509@naviaxis"
+            upi_url = f"upi://pay?pa={upi_id}&pn=Krishnan%20R&am={total_inr}&cu=INR"
+            qr_api = f"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={upi_url}"
+            
+            st.info(f"**UPI ID:** {upi_id}")
+            st.image(qr_api, caption="Scan to Pay")
+            txn_id_input = st.text_input("Transaction ID / UTR Number", placeholder="E.g. 1234567890")
 
-            pay_btn = st.form_submit_button("🔒 Pay & Confirm Booking", use_container_width=True, type="primary")
-
-    with col2:
-        st.markdown("""
-        <div class="card" style="background:linear-gradient(135deg,#FAF7F4,#F0EAE2);">
-            <h4 style="font-family:'Playfair Display',serif;color:#2C1810;margin:0 0 16px;">🔒 Secure Payment</h4>
-        """, unsafe_allow_html=True)
-        for item in ["SSL 256-bit encryption", "Money-back guarantee", "Instant confirmation email", "Cancel up to 24hrs before", "Trusted payment gateway"]:
-            st.markdown(f"<div style='font-size:0.85rem;color:#5C3317;padding:4px 0;'>✅ {item}</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    if pay_btn:
-        if not card_number or not expiry or not name_on_card or not cvv:
-            toast_warning("Please fill in all payment details.")
-        else:
-            with st.spinner("Processing secure payment..."):
-                time.sleep(1.5)
-                booking_id, txn_id = create_booking(
-                    st.session_state.user['id'], designer_id, design_id,
-                    str(booking_date), time_slot, service_type, total_usd
-                )
-
-            st.balloons()
-            st.markdown(f"""
-            <div style="background:linear-gradient(135deg,#D4EDDA,#C3E6CB);border-radius:16px;padding:30px;text-align:center;margin:20px 0;">
-                <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
-                <h2 style="font-family:'Playfair Display',serif;color:#155724;margin:0 0 8px;">Booking Confirmed!</h2>
-                <p style="color:#155724;margin:0 0 16px;">Your appointment with <strong>{designer_name}</strong> is confirmed.</p>
-                <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-                    <div style="background:white;border-radius:10px;padding:12px 20px;">
-                        <div style="font-size:0.75rem;color:#6B5A4A;text-transform:uppercase;">Booking ID</div>
-                        <div style="font-weight:700;color:#2C1810;">#{booking_id:04d}</div>
-                    </div>
-                    <div style="background:white;border-radius:10px;padding:12px 20px;">
-                        <div style="font-size:0.75rem;color:#6B5A4A;text-transform:uppercase;">Transaction</div>
-                        <div style="font-weight:700;color:#2C1810;">{txn_id}</div>
-                    </div>
-                    <div style="background:white;border-radius:10px;padding:12px 20px;">
-                        <div style="font-size:0.75rem;color:#6B5A4A;text-transform:uppercase;">Amount Paid</div>
-                        <div style="font-weight:700;color:#27AE60;">₹{total_inr:,}</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            if st.form_submit_button("✅ I have Paid - Confirm Booking", use_container_width=True, type="primary"):
+                if txn_id_input:
+                    create_booking(st.session_state.user['id'], designer_id, None, str(booking_date), time_slot, service_type, total_inr/75)
+                    st.balloons()
+                    toast_success("Booking Confirmed!")
+                else:
+                    st.warning("Please enter Transaction ID.")
 
 
 def page_bookings():
