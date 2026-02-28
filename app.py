@@ -1220,8 +1220,8 @@ def page_payment():
             with qr_col:
                 # Generates a dynamic QR link using Google Charts API
                 upi_id = "9080599509@naviaxis"
-                upi_url = f"upi://pay?pa={upi_id}&pn=Nabi_Interior_Designs&am={total_inr}&cu=INR"
-                qr_api = f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&cht=qr&chl={upi_url}"
+                upi_url = f"upi://pay?pa={upi_id}""&pn=Nabi_Interior_Designs""&am={total_inr}""&cu=INR"
+                qr_api = f"https://api.qrserver.com/v1/create-qr-code/?size=200x200""&chl={upi_url}"
                 st.image(qr_api, caption="Scan to Pay via PhonePe / GPay / Paytm")
 
             pay_btn = st.form_submit_button("✅ I have Paid - Confirm Booking", use_container_width=True, type="primary")
