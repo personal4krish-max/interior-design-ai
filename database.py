@@ -216,3 +216,11 @@ def admin_all_bookings():
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
     return rows
+# Add this to the bottom of database.py
+def update_booking_status(booking_id, status):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("UPDATE bookings SET booking_status=? WHERE id=?", (status, booking_id))
+    conn.commit()
+    conn.close()
+    return True
