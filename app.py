@@ -467,7 +467,7 @@ def render_sidebar():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            else:
+        else:
             st.markdown("""
             <div style="text-align:center;padding:10px 0 20px;">
                 <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
