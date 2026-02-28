@@ -450,9 +450,10 @@ def render_sidebar():
         <hr style="border-color:#EDE5DC;margin:12px 0;">
         """, unsafe_allow_html=True)
 
+        # 1. Check if user is logged in
         if st.session_state.logged_in:
             user = st.session_state.user
-            role = user.get('role', 'user')  # This defines the variable
+            role = user.get('role', 'user') # CRITICAL: This line fixes the UnboundLocalError
 
             st.markdown(f"""
             <div style="background:linear-gradient(135deg,#F0EAE2,#E8DCC8);border-radius:12px;
@@ -463,6 +464,7 @@ def render_sidebar():
             </div>
             """, unsafe_allow_html=True)
 
+            # Member-only navigation
             pages_user = {
                 "🏠 Dashboard": "dashboard",
                 "✨ AI Design Wizard": "design",
@@ -473,7 +475,7 @@ def render_sidebar():
             }
             
             nav = pages_user.copy()
-            if role == "admin":  # This is line 498 where your error was
+            if role == "admin":
                 nav.update({
                     "📊 Admin Dashboard": "admin",
                     "👥 Manage Users": "admin_users",
@@ -493,8 +495,8 @@ def render_sidebar():
                 st.session_state.page = "home"
                 st.rerun()
 
+        # 2. If logged out, show Login/Register
         else:
-            # Guest Navigation (Restored)
             st.markdown("""
             <div style="text-align:center;padding:10px 0 20px;">
                 <p style="color:#5C3317;font-size:0.9rem;">Transform your space with AI-powered design intelligence.</p>
