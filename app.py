@@ -636,9 +636,6 @@ def page_login():
     <div style="text-align:center;font-size:0.85rem;color:#6B5A4A;">
         Don't have an account? → Use sidebar <strong>Register</strong>
         <br><br>
-        <strong>Demo Credentials:</strong><br>
-        Admin: admin@interiordesign.com / admin123
-    </div>
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
