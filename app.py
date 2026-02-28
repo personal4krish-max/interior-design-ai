@@ -1400,15 +1400,14 @@ def page_admin_bookings():
 
 # ── Router ─────────────────────────────────────────────────────────────────────
 def route():
-    # --- EMERGENCY SIDEBAR RESET BUTTON ---
-    # This button appears at the top left to fix the missing sidebar issue
-    col_btn, _ = st.columns([1, 6])
+    # --- EMERGENCY RESET BUTTON (Top Left) ---
+    col_btn, _ = st.columns([1, 15])
     with col_btn:
-        if st.button("⋮", help="Click to restore sidebar/Logout"):
+        if st.button("⋮", help="Restore Sidebar / Reset Session"):
             st.session_state.logged_in = False
-            st.session_state.user = None
             st.session_state.page = "home"
             st.rerun()
+
     render_sidebar()
     page = st.session_state.page
 
